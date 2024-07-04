@@ -6,7 +6,7 @@ const Hotel = require("../models/hotel.models");
 
 
 hotelRouter.get("/api/hotel", requireSignin, async(req, res)=>{
-    const { ...getDetails } = req.body
+    const getDetails= req.body
     console.log(getDetails)
     try {
         const hotels = await Hotel.find({getDetails})
