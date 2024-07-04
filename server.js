@@ -7,6 +7,7 @@ dotenv.config();
 
 // Load environment variables
 const connectionString = process.env.DATABASE_URI;
+const PORT = process.env.PORT || 5000; // Use PORT environment variable or default to 5000
 
 // Connect to MongoDB using Mongoose
 mongoose
@@ -30,7 +31,6 @@ server.use(auth);
 server.use(flight);
 
 // Start the server
-const PORT = 5001;
 server.listen(PORT, () => {
   console.log(`Server listening on port number: ${PORT}`);
 });
