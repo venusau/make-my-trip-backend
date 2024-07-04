@@ -25,10 +25,12 @@ require("./models/user.models");
 // Import routes
 const auth = require("./routes/auth.routes");
 const flight = require("./routes/flight.routes");
+const hotel = require("./routes/hotel.routes")
 
 // Use routes
 server.use(auth);
 server.use(flight);
+server.use(hotel)
 
 // Start the server
 server.listen(PORT, () => {

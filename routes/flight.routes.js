@@ -98,9 +98,65 @@ flightRouter.post(
     } catch (err) {
       // Handling errors
       console.error(err);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: `Flight already exist ${err}` });
     }
   }
 );
+
+
+flightRouter.put(
+  "/api/flight",
+  [
+    requireSignin,
+    requireAdmin,
+    body('flightNumber').notEmpty().withMessage('flightNumber is required')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { flightNumber, ...updates } = req.body;
+
+    try {
+      const flight = await Flight.findOne({ flightNumber });
+      if (!flight) {
+        return res.status(404).json({ error: "Flight does not exist" });
+      }
+
+      // Update the flight with the provided updates
+      await Flight.updateOne({ flightNumber }, { $set: updates });
+
+      // Fetch the updated flight
+      const updatedFlight = await Flight.findOne({ flightNumber });
+
+      // Send a success response
+      res.status(200).json({ message: 'Flight updated successfully', flight: updatedFlight });
+    } catch (err) {
+      // Handling errors
+      console.error(err);
+      res.status(500).json({ error: `An error occurred while updating the flight: ${err.message}` });
+    }
+  }
+);
+
+
+flightRouter.delete("/api/flight", requireSignin, requireAdmin, async(req, res)=>{
+  const { flightNumber } = req.body
+  try{
+  const flight = await Flight.findOne({flightNumber})
+  if(!flight){
+    return res.status(401).json({error:"FLight does not exist"})
+
+  }
+  await Flight.deleteOne({flightNumber})
+  res.json({message:"Flight deleted successfully"})
+}
+catch(err){
+  res.status(500).json({error:`An error occurred while deleting the flight: ${err}`})
+}
+
+})
 
 module.exports = flightRouter;
