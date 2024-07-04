@@ -1,0 +1,106 @@
+const express = require("express");
+const { body, validationResult } = require("express-validator");
+const flightRouter = express.Router();
+const requireSignin = require("../middleware/requireSignin");
+const requireAdmin = require("../middleware/requireAdmin");
+const Flight = require("../models/flight.models");
+
+// Get flight route - for any logged-in user
+flightRouter.get("/api/flight", requireSignin, async (req, res) => {
+  const { from, to, departureTime, returnTime, seats } = req.body;
+  if(returnTime){
+    
+  }
+
+  if (!from || !to || !departureTime || !seats) {
+    return res.status(404).json({ error: "All fields are required" });
+  }
+
+  if (!req.user) {
+    return res.status(401).json({ error: "You are not logged in" });
+  }
+
+  try {
+    const flights = await Flight.find({ from, to, departureTime });
+    let flights_response = [];
+
+    for (let flight of flights) {
+      if (flight.seatsAvailable > seats) {
+        flights_response.push(flight);
+      }
+    }
+
+    res.json(flights_response);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching flights" });
+  }
+});
+// Post flight route - for admin only
+flightRouter.post(
+  "/api/flight",
+  [
+    requireSignin,
+    requireAdmin,
+    body('flightNumber').notEmpty().withMessage('flightNumber is required'),
+    body('airline').notEmpty().withMessage('airline is required'),
+    body('from').notEmpty().withMessage('from is required'),
+    body('to').notEmpty().withMessage('to is required'),
+    body('departureTime').notEmpty().withMessage('departureTime is required'),
+    body('arrivalTime').notEmpty().withMessage('arrivalTime is required'),
+    body('duration').notEmpty().withMessage('duration is required'),
+
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      flightNumber,
+      airline,
+      from,
+      to,
+      departureTime,
+      arrivalTime,
+      duration,
+      price,
+      seatsAvailable,
+      seatType,
+      status,
+      createdAt,
+      updatedAt
+    } = req.body;
+
+    try {
+      // Create a new flight instance of mongoose Model `Flight`
+      const newFlight = new Flight({
+        flightNumber,
+        airline,
+        from,
+        to,
+        departureTime,
+        arrivalTime,
+        duration,
+        price,
+        seatsAvailable,
+        seatType,
+        status,
+        createdAt,
+        updatedAt
+      });
+
+      // Save the flight to the database
+      await newFlight.save();
+
+      // Send a success response
+      res.status(201).json({ message: 'Flight created successfully', flight: newFlight });
+    } catch (err) {
+      // Handling errors
+      console.error(err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+module.exports = flightRouter;
