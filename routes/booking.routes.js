@@ -21,6 +21,9 @@ bookingRouter.get('/api/booking', requireSignin, async (req, res) => {
 // Create a new booking
 bookingRouter.post('/api/booking', requireSignin, async (req, res) => {
   const { userId, bookingType, hotelDetails, flightDetails } = req.body;
+  if(!userId||!bookingType||!hotelDetails||!flightDetails){
+    return res.status(401).json({error:"All fields are required"})
+  }
 
   try {
     let bookingData = {
