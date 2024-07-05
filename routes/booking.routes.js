@@ -5,12 +5,13 @@ const Booking = require('../models/booking.models');
 
 // Get all bookings for a user
 bookingRouter.get('/api/booking', requireSignin, async (req, res) => {
+  console.log(req.user)
     try {
-      const bookings = await Booking.find({ userId: req.user._id });
-      if (bookings.length === 0) {
+      const booking = await Booking.find({ userId: req.user._id });
+      if (booking.length === 0) {
         return res.status(404).json({ error: 'No bookings found' });
       }
-      return res.json({ bookings });
+      return res.json({ booking });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: `Internal server error: ${err.message}` });
