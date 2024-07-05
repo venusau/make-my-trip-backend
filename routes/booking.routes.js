@@ -16,18 +16,21 @@ bookingRouter.get('/api/booking', requireSignin, async (req, res) => {
       return res.status(500).json({ error: `Internal server error: ${err.message}` });
     }
   });
+
   
 
 // Create a new booking
 bookingRouter.post('/api/booking', requireSignin, async (req, res) => {
-  const { userId, bookingType, hotelDetails, flightDetails } = req.body;
-  if(!userId||!bookingType||!hotelDetails||!flightDetails){
-    return res.status(401).json({error:"All fields are required"})
+  const { bookingType, hotelDetails, flightDetails } = req.body;
+  const user = req.user; // Corrected to fetch user from req.user
+  
+  if (!user || !bookingType || (!hotelDetails && !flightDetails)) { // Corrected the condition
+    return res.status(400).json({ error: "All fields are required" }); // Changed to 400 Bad Request
   }
 
   try {
     let bookingData = {
-      userId,
+      userId: user._id,
       bookingType,
       bookingDate: new Date()
     };
@@ -48,24 +51,26 @@ bookingRouter.post('/api/booking', requireSignin, async (req, res) => {
   }
 });
 
+
 // Delete a booking
 bookingRouter.delete('/api/booking/:id', requireSignin, async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      const booking = await Booking.findById(id);
-      if (!booking) {
-        return res.status(404).json({ error: 'Booking not found' });
-      }
-  
-      await booking.deleteOne();
-  
-      return res.json({ message: 'Booking deleted successfully' });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: `Internal server error: ${err.message}` });
+  const { id } = req.params;
+
+  try {
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
     }
-  });
+
+    await booking.deleteOne();
+
+    return res.json({ message: 'Booking deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: `Internal server error: ${err.message}` });
+  }
+});
+
   
 
 module.exports = bookingRouter;

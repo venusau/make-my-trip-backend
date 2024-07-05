@@ -33,8 +33,8 @@ const bookingSchema = new Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Flight'
     },
-    seatNumber: {
-      type: String
+    numberOfSeats: {
+      type: Number
     },
     departureDate: {
       type: Date
