@@ -5,7 +5,8 @@ const requireSignin = require("../middleware/requireSignin");
 const requireAdmin = require("../middleware/requireAdmin");
 const Flight = require("../models/flight.models");
 
-// Get flight route - for any logged-in user
+
+// GET Route 
 flightRouter.get("/api/flight", requireSignin, async (req, res) => {
   const { from, to, departureTime, returnTime, seats } = req.query;
 
@@ -18,7 +19,10 @@ flightRouter.get("/api/flight", requireSignin, async (req, res) => {
   }
 
   try {
-    const flights = await Flight.find({ from, to, departureTime });
+    // Parse departureTime into a Date object
+    const parsedDepartureTime = new Date(departureTime);
+    const flights = await Flight.find({ from, to, departureTime: parsedDepartureTime });
+    
     let flights_response = [];
 
     for (let flight of flights) {
@@ -32,6 +36,7 @@ flightRouter.get("/api/flight", requireSignin, async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching flights" });
   }
 });
+
 
 // Post flight route - for admin only
 flightRouter.post(
