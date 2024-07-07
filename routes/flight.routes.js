@@ -6,31 +6,32 @@ const requireAdmin = require("../middleware/requireAdmin");
 const Flight = require("../models/flight.models");
 
 // Get flight route - for any logged-in user
-const handleSearch = async (e) => {
-  e.preventDefault();
-  try {
-    const queryParams = new URLSearchParams({
-      from,
-      to,
-      departureTime: departureDate,
-      returnTime: returnDate,
-      seats: numberOfSeats,
-    }).toString();
+flightRouter.get("/api/flight", requireSignin, async (req, res) => {
+  const { from, to, departureTime, returnTime, seats } = req.query;
 
-    const response = await fetch(`https://make-my-trip-backend.onrender.com/api/flight?${queryParams}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("jwt")}`
-      }
-    });
-
-    const data = await response.json();
-    setFlights(data);
-  } catch (error) {
-    console.log("Error fetching flights:", error);
+  if (!from || !to || !departureTime || !seats) {
+    return res.status(400).json({ error: "All fields are required" });
   }
-};
+
+  if (!req.user) {
+    return res.status(401).json({ error: "You are not logged in" });
+  }
+
+  try {
+    const flights = await Flight.find({ from, to, departureTime });
+    let flights_response = [];
+
+    for (let flight of flights) {
+      if (flight.seatsAvailable >= parseInt(seats)) {
+        flights_response.push(flight);
+      }
+    }
+
+    res.json(flights_response);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching flights" });
+  }
+});
 
 // Post flight route - for admin only
 flightRouter.post(
