@@ -9,7 +9,8 @@ bookingRouter.get('/api/booking', requireSignin, async (req, res) => {
     try {
       const booking = await Booking.find({ userId: req.user._id });
       if (booking.length === 0) {
-        return res.status(404).json({ error: 'No bookings found' });
+        console.log(booking)
+        return res.status(404).json({ error: 'No bookings found', booking });
       }
       return res.json({ booking });
     } catch (err) {
