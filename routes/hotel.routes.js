@@ -6,7 +6,8 @@ const Hotel = require("../models/hotel.models");
 
 // Get hotels
 hotelRouter.get("/api/hotel", requireSignin, async (req, res) => {
-  const filter = req.body; 
+  const {checkInDate, checkOutDate, ...filter} = req.query; 
+  console.log(filter)
   try {
     const hotels = await Hotel.find(filter);
     if (hotels.length === 0) {
