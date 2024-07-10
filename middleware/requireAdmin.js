@@ -27,7 +27,7 @@ const requireAdmin = async (req, res, next) => {
     }
   } catch (error) {
     console.log("Something went wrong", error);
-    return false, error
+    return false
   }
 };
 

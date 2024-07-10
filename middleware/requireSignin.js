@@ -29,6 +29,7 @@ const requireSignin = async (req, res, next) => {
 
         // Check if the user is an admin
         req.isAdmin = await requireAdmin(req, res, () => {});
+        console.log(req.isAdmin)
 
         next();
     } catch (err) {
