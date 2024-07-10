@@ -8,28 +8,26 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
 const ADMIN_NAME = process.env.ADMIN_NAME;
 
-const requireAdmin = (req, res, next) => {
+const requireAdmin = async (req, res, next) => {
   if (!req.user) {
-    return res.status(401).json({ error: "You are not logged in" });
+    return false
   }
 
   const { email, name, password } = req.user;
-  if (email === ADMIN_EMAIL && name === ADMIN_NAME) {
-    bcrypt.compare(ADMIN_EMAIL_PASSWORD, password)
-      .then((doMatch) => {
-        if (!doMatch) {
-          return res.status(403).json({ error: "You are not authorized" });
-        }
-        req.isAdmin = true
-        console.log(req.user);
-        next();
-      })
-      .catch((err) => {
-        console.log("Something went wrong", err);
-        res.status(500).json({ error: `Something went wrong: ${err.message}` });
-      });
-  } else {
-    return res.status(403).json({ error: "You are not authorized" });
+
+  try {
+    if (email === ADMIN_EMAIL && name === ADMIN_NAME) {
+      const doMatch = await bcrypt.compare(ADMIN_EMAIL_PASSWORD, password);
+      if (!doMatch) {
+        return false
+      }
+      return true
+    } else {
+      return false
+    }
+  } catch (error) {
+    console.log("Something went wrong", error);
+    return false, error
   }
 };
 

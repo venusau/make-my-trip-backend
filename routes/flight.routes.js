@@ -35,13 +35,12 @@ flightRouter.put(
   "/api/flight",
   [
     requireSignin,
-    requireAdmin,
     body('flightNumber').notEmpty().withMessage('flightNumber is required')
   ],
   putFlightController
 );
 
 
-flightRouter.delete("/api/flight", requireSignin, requireAdmin, deleteFlightController )
+flightRouter.delete("/api/flight", requireSignin, deleteFlightController )
 
 module.exports = flightRouter;
