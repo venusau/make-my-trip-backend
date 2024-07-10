@@ -1,5 +1,5 @@
 const Hotel = require("../models/hotel.models");
-const { postBookingController } = require("./booking.controllers");
+
 
 const getHotelController = async (req, res) => {
     const { checkInDate, checkOutDate, ...filter } = req.query;
@@ -16,9 +16,7 @@ const getHotelController = async (req, res) => {
         }
   
         
-        hotels = await Hotel.find({
-          ...filter
-        });
+        hotels = await Hotel.find(filter);
       }
   
       if (hotels.length === 0) {
