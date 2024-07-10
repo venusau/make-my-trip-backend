@@ -20,6 +20,7 @@ const requireAdmin = (req, res, next) => {
         if (!doMatch) {
           return res.status(403).json({ error: "You are not authorized" });
         }
+        req.isAdmin = true
         console.log(req.user);
         next();
       })

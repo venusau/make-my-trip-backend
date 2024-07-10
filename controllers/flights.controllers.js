@@ -1,42 +1,51 @@
 const Flight = require("../models/flight.models");
+const bcrypt = require("bcryptjs")
+const dotenv = require("dotenv");
+dotenv.config();
 const { body, validationResult } = require("express-validator");
 
 
 const getFlightController = async (req, res) => {
-    const { from, to, departureTime, returnTime, seats } = req.query;
+  const { from, to, departureTime, returnTime, seats } = req.query;
   
-    if (!from || !to || !departureTime || !seats) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-  
-    if (!req.user) {
-      return res.status(401).json({ error: "You are not logged in" });
-    }
-  
-    try {
-      // Parse departureTime into a Date object
-      const parsedDepartureTime = new Date(departureTime);
-      const flights = await Flight.find({ from, to, departureTime: parsedDepartureTime });
-      
-      let flights_response = [];
-  
-      for (let flight of flights) {
-        if (flight.seatsAvailable >= parseInt(seats)) {
-          flights_response.push(flight);
-        }
+  try {
+    let flights = [];
+    console.log(req.query);
+
+    // Check if the user is an admin
+
+      if (req.isAdmin) {
+        flights = await Flight.find({});
+        console.log("Hello from the admin section", req.isAdmin, flights);
+      } 
+    else {
+      // Non-admin user logic
+      if (!from || !to || !departureTime || !seats) {
+        return res.status(400).json({ error: "All fields are required" });
       }
-  
-      res.json(flights_response);
-    } catch (error) {
-      res.status(500).json({ error: "An error occurred while fetching flights" });
+
+      const parsedDepartureTime = new Date(departureTime);
+      
+      flights = await Flight.find({ from, to, departureTime: parsedDepartureTime });
+
+      flights = flights.filter(flight => flight.seatsAvailable >= parseInt(seats));
     }
+
+    console.log(flights);
+    res.json(flights);
+  } catch (error) {
+    console.error("Error fetching flights:", error);
+    res.status(500).json({ error: "An error occurred while fetching flights" });
   }
+};
+
 
 const postFlightController = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+
 
     const {
       flightNumber,
@@ -53,6 +62,7 @@ const postFlightController = async (req, res) => {
       createdAt,
       updatedAt
     } = req.body;
+    
 
     try {
       // Create a new flight instance of mongoose Model `Flight`
