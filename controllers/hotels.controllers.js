@@ -37,6 +37,7 @@ const postHotelController = async (req, res) => {
             return res.status(403).json({ error: "Unauthorized access" });
           }
       const hotelDetails = req.body;
+      console.log(req.body)
   
       const hotel = new Hotel(hotelDetails);
       await hotel.save();

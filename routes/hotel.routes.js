@@ -8,12 +8,12 @@ const { getHotelController, postHotelController, putHotelController, deleteHotel
 hotelRouter.get("/api/hotel", requireSignin, getHotelController );
 
 // Create hotel
-hotelRouter.post("/api/hotel", requireSignin, requireAdmin, postHotelController);
+hotelRouter.post("/api/hotel", requireSignin, postHotelController);
 
 // Update hotel
-hotelRouter.put("/api/hotel", requireSignin, requireAdmin, putHotelController);
+hotelRouter.put("/api/hotel", requireSignin,  putHotelController);
 
 // Delete hotel
-hotelRouter.delete("/api/hotel", requireSignin, requireAdmin, deleteHotelController);
+hotelRouter.delete("/api/hotel", requireSignin,  deleteHotelController);
 
 module.exports = hotelRouter;
