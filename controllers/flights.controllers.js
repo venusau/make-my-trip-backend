@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 
 const getFlightController = async (req, res) => {
   const { from, to, departureTime, seats } = req.query;
+  console.log(req.query);
   
   try {
     let flights = [];
@@ -20,6 +21,9 @@ const getFlightController = async (req, res) => {
         return res.status(400).json({ error: "Invalid departure time format" });
       }
 
+      // Set the time to the start of the day in UTC
+      parsedDepartureTime.setUTCHours(0, 0, 0, 0);
+
       const parsedSeats = parseInt(seats);
       if (isNaN(parsedSeats)) {
         return res.status(400).json({ error: "Invalid seats value" });
@@ -28,7 +32,10 @@ const getFlightController = async (req, res) => {
       flights = await Flight.find({
         from,
         to,
-        departureTime: parsedDepartureTime,
+        departureTime: {
+          $gte: parsedDepartureTime,
+          $lt: new Date(parsedDepartureTime.getTime() + 24 * 60 * 60 * 1000)
+        },
         seatsAvailable: { $gte: parsedSeats }
       });
     }
@@ -51,7 +58,12 @@ const postFlightController = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const newFlight = new Flight(req.body);
+    const flightData = { ...req.body };
+    if (flightData.departureTime) {
+      flightData.departureTime = new Date(flightData.departureTime);
+    }
+
+    const newFlight = new Flight(flightData);
     await newFlight.save();
 
     res.status(201).json({ message: 'Flight created successfully', flight: newFlight });
@@ -77,6 +89,10 @@ const putFlightController = async (req, res) => {
     }
 
     const { flightNumber, ...updates } = req.body;
+
+    if (updates.departureTime) {
+      updates.departureTime = new Date(updates.departureTime);
+    }
 
     const flight = await Flight.findOneAndUpdate(
       { flightNumber },
