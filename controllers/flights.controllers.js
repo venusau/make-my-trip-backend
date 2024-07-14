@@ -1,5 +1,5 @@
 const Flight = require("../models/flight.models");
-const { validationResult } = require("express-validator");
+
 
 const getFlightController = async (req, res) => {
   const { from, to, departureTime, seats } = req.query;
@@ -8,7 +8,7 @@ const getFlightController = async (req, res) => {
   try {
     let flights = [];
 
-    if (req.isAdmin) {
+    if (req.user && req.isAdmin) {
       flights = await Flight.find({});
       console.log("Admin fetching all flights", flights.length);
     } else {
@@ -53,11 +53,6 @@ const postFlightController = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized access" });
     }
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const flightData = { ...req.body };
     if (flightData.departureTime) {
       flightData.departureTime = new Date(flightData.departureTime);
@@ -72,7 +67,7 @@ const postFlightController = async (req, res) => {
     if (err.code === 11000) {
       res.status(409).json({ error: "Flight with this number already exists" });
     } else {
-      res.status(500).json({ error: "An error occurred while creating the flight" });
+      res.status(500).json({ error: "An error occurred while creating the flight", message:err.message });
     }
   }
 };
@@ -81,11 +76,6 @@ const putFlightController = async (req, res) => {
   try {
     if (!req.user || !req.isAdmin) {
       return res.status(403).json({ error: "Unauthorized access" });
-    }
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
     }
 
     const { flightNumber, ...updates } = req.body;
