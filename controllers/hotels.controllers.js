@@ -50,20 +50,20 @@ const postHotelController = async (req, res) => {
   }
 
 const putHotelController = async (req, res) => {
-    const { hotelId, ...hotelDetails } = req.body;
-    console.log(hotelId);
+    const { _id, ...hotelDetails } = req.body;
+    console.log(_id);
   
     try {
         if (!req.user || !req.isAdmin) {
             return res.status(403).json({ error: "Unauthorized access" });
           }
-      let hotel = await Hotel.findById(hotelId);
+      let hotel = await Hotel.findById(_id);
       if (!hotel) {
         return res.status(404).json({ error: "Hotel not found" });
       }
   
-      await Hotel.updateOne({ _id: hotelId }, { $set: hotelDetails });
-      hotel = await Hotel.findById(hotelId);
+      await Hotel.updateOne({ _id }, { $set: hotelDetails });
+      hotel = await Hotel.findById(_id);
   
       return res.json({ message: "Hotel updated successfully", hotel });
     } catch (err) {
