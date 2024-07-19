@@ -16,13 +16,19 @@ const getFlightController = async (req, res) => {
         return res.status(400).json({ error: "All fields are required" });
       }
 
-      const parsedDepartureTime = new Date(departureTime);
-      if (isNaN(parsedDepartureTime.getTime())) {
-        return res.status(400).json({ error: "Invalid departure time format" });
+      // Parse the date, ignoring the time component
+      const parsedDepartureDate = new Date(departureTime.split('T')[0]);
+      if (isNaN(parsedDepartureDate.getTime())) {
+        return res.status(400).json({ error: "Invalid departure date format" });
       }
 
       // Set the time to the start of the day in UTC
-      parsedDepartureTime.setUTCHours(0, 0, 0, 0);
+      const startOfDay = new Date(parsedDepartureDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      // Set the end of the day
+      const endOfDay = new Date(parsedDepartureDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
 
       const parsedSeats = parseInt(seats);
       if (isNaN(parsedSeats)) {
@@ -33,8 +39,8 @@ const getFlightController = async (req, res) => {
         from,
         to,
         departureTime: {
-          $gte: parsedDepartureTime,
-          $lt: new Date(parsedDepartureTime.getTime() + 24 * 60 * 60 * 1000)
+          $gte: startOfDay,
+          $lt: endOfDay
         },
         seatsAvailable: { $gte: parsedSeats }
       });
