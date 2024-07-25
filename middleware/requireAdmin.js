@@ -8,7 +8,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
 const ADMIN_NAME = process.env.ADMIN_NAME;
 
-const requireAdmin = async (req, res, next) => {
+const requireAdmin = async (req) => {
   if (!req.user) {
     return false
   }
@@ -18,6 +18,7 @@ const requireAdmin = async (req, res, next) => {
   try {
     if (email === ADMIN_EMAIL && name === ADMIN_NAME) {
       const doMatch = await bcrypt.compare(ADMIN_EMAIL_PASSWORD, password);
+
       if (!doMatch) {
         return false
       }
